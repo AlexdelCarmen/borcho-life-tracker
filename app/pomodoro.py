@@ -7,7 +7,7 @@ router = APIRouter(prefix="/pomodoro")
 
 @router.post("/start")
 def start_pomodoro():
-    db = SessionLocal
+    db = SessionLocal()
     
     #verificando si ya hay un timer activo 
     
@@ -18,11 +18,12 @@ def start_pomodoro():
     
     pomo = Pomodoro()
     db.add(pomo)
-    db.commit
+    db.commit()
     db.refresh(pomo)
+    pomo_id = pomo.id
     db.close()
     
-    return {"message": "Pomodoro started", "id": pomo.id}
+    return {"message": "Pomodoro started", "id": pomo_id}
 
 @router.get("/status")
 def pomodoro_status():

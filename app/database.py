@@ -5,4 +5,4 @@ DATABASE_URL = "sqlite:///./tracker.db"
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(bind=engine)
-base = declarative_base()
+Base = declarative_base()
