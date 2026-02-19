@@ -17,17 +17,18 @@
 
         <h2 id="status">Idle</h2>
         <h3 id="timer"></h3>
+
         <script>
             async function startPomodoro() {
-                await fetch("/pomodoro/start", {method: "POST"})
+                await fetch("/pomodoro/start", {method: "POST"});
+                checkStatus();
             }
             async function checkStatus() {
                 const response = await fetch("/pomodoro/status");
-                const data = await response.json;
+                const data = await response.json();
 
                 if (data.status === "running") {
-                    document.getElementById("status").innertext = "Running";
-                    print(document.getElementById("status").innerText);
+                    document.getElementById("status").innerText = "Running";
                     let minutes = Math.floor(data.remaining_seconds / 60);
                     let seconds = data.remaining_seconds % 60; 
                     document.getElementById("timer").innerText = minutes + ":" + (seconds < 10 ? "0": "") + seconds;
@@ -41,7 +42,7 @@
                 }
             }
 
-            setInterval(checkStatus, 5000);
+            setInterval(checkStatus, 1000);
         </script>
     </body>
 </html>
