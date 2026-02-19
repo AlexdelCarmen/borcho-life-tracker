@@ -7,11 +7,11 @@ from .pomodoro import router as pomodoro_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-tempplates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(pomodoro_router)
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard(request: Request):
-    return tempplates.TemplateResponse("dashboard.html", {"request": request}) 
+    return templates.TemplateResponse("dashboard.html", {"request": request}) 
     
