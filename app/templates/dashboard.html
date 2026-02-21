@@ -10,39 +10,125 @@
         <title>Borcho Life Tracker</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                text-align: center;
+                margin-top: 40px;
+            }
+
+            #timer {
+                font-size: 48px;
+                font-weight: bold;
+            }
+
+            #streak {
+                font-weight: bold;
+                font-size: 24px;
+                transition: color 0.3s ease;
+            }
+
+            .low {color: red;}
+            .mid {color: goldenrod;}
+            .high {color: green;}
+            .elite {color: purple;}
+        </style>
     </head>
     <body>
         <h1>Borcho Life Tracker</h1>
         <button onclick="startPomodoro()">Start</button>
+        <button onclick="interruptPomodoro()">Interrupt</button>
 
         <h2 id="status">Idle</h2>
         <h3 id="timer"></h3>
 
-        <script>
-            async function startPomodoro() {
-                await fetch("/pomodoro/start", {method: "POST"});
-                checkStatus();
-            }
-            async function checkStatus() {
-                const response = await fetch("/pomodoro/status");
-                const data = await response.json();
+        <hr>
 
-                if (data.status === "running") {
-                    document.getElementById("status").innerText = "Running";
-                    let minutes = Math.floor(data.remaining_seconds / 60);
-                    let seconds = data.remaining_seconds % 60; 
-                    document.getElementById("timer").innerText = minutes + ":" + (seconds < 10 ? "0": "") + seconds;
-                } else if (data.status === "completed") {
-                    document.getElementById("status").innerText = "Completed 🎉";
-                    document.getElementById("timer").innerText = "";
+        <p>Streak actual: <span id="streak">0</span></p>
+        <p>Total Completed: <span id="completed">0</span></p>
+        <p>Total Interrupted: <span id="interrupted">0</span></p>
 
-                } else {
-                    document.getElementById("status").innerText = "Idle";
-                    document.getElementById("timer").innerText = "";
-                }
-            }
+        <p id="rankTitle"></p>
 
-            setInterval(checkStatus, 1000);
-        </script>
+<script>
+        async function startPomodoro() {
+        const response = await fetch("/pomodoro/start", { method: "POST" });
+        const data = await response.json();
+
+        if (data.previous_status) {
+            document.getElementById("lastResult").innerText =
+                "Último resultado: " + data.previous_status.toUpperCase();
+        }
+
+        checkStatus();
+        loadStats();
+    }
+
+    async function interruptPomodoro() {
+        await fetch("/pomodoro/interrupt", { method: "POST" });
+        checkStatus();
+        loadStats();
+    }
+
+    async function checkStatus() {
+        const response = await fetch("/pomodoro/status");
+        const data = await response.json();
+
+        if (data.status === "running") {
+            document.getElementById("status").innerText = "Running";
+            let minutes = Math.floor(data.remaining_seconds / 60);
+            let seconds = data.remaining_seconds % 60;
+            document.getElementById("timer").innerText =
+                minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        } else if (data.status === "completed") {
+            document.getElementById("status").innerText = "Completed 🎉";
+            document.getElementById("timer").innerText = "";
+        } else {
+            document.getElementById("status").innerText = "Idle";
+            document.getElementById("timer").innerText = "";
+        }
+    }
+
+async function loadStats() {
+    const response = await fetch("/pomodoro/stats");
+    const data = await response.json();
+
+    const streakElement = document.getElementById("streak");
+
+    streakElement.innerText = data.current_streak;
+
+    streakElement.classList.remove("low", "mid", "high", "elite");
+
+    if (data.current_streak === 0) {
+        streakElement.classList.add("low");
+    } else if (data.current_streak < 5) {
+        streakElement.classList.add("mid");
+    } else if (data.current_streak < 20) {
+        streakElement.classList.add("high");
+    } else {
+        streakElement.classList.add("elite");
+    }
+
+    const rankTitle = document.getElementById("rankTitle");
+
+    if (data.current_streak < 5) {
+        rankTitle.innerText = "Novato del Dojo";
+    } else if (data.current_streak < 20) {
+        rankTitle.innerText = "Discípulo consistente";
+    } else {
+        rankTitle.innerText = "Guerrero de Hierro";
+    }
+
+    document.getElementById("completed").innerText = data.total_completed;
+    document.getElementById("interrupted").innerText = data.total_interrupted;
+}
+
+
+    setInterval(checkStatus, 1000);
+    setInterval(loadStats, 5000);
+
+    loadStats();
+</script>
+
     </body>
 </html>
