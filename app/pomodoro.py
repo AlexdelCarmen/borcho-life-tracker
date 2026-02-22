@@ -65,18 +65,48 @@ def pomodoro_status():
     end_time = pomo.start_time + timedelta(minutes=pomo.duration_minutes)
     remaining = (end_time - now).total_seconds()
     
-    if remaining <=0: 
+    if remaining <= 0:
         pomo.status = "completed"
         pomo.end_time = end_time
         db.commit()
+
+        if pomo.session_type == "work":
+
+            completed_works = (
+                db.query(Pomodoro)
+                .filter(
+                    Pomodoro.status == "completed",
+                    Pomodoro.session_type == "work"
+                )
+                .count()
+            )
+
+            if completed_works % CYCLES_BEFORE_LONG_BREAK == 0:
+                next_type = "long_break"
+                duration = LONG_BREAK_DURATION
+            else:
+                next_type = "short_break"
+                duration = SHORT_BREAK_DURATION
+
+            new_session = Pomodoro(
+                session_type=next_type,
+                duration_minutes=duration
+            )
+
+            db.add(new_session)
+            db.commit()
+
+            db.close()
+
+            return {
+                "status": "running",
+                "session_type": next_type,
+                "remaining_seconds": duration * 60
+            }
+
         db.close()
         return {"status": "completed"}
-    
-    db.close()
-    return {
-        "status": "running",
-        "remaining_seconds": int(remaining)
-    }
+
     
 @router.post("/interrupt")
 def interrupt_pomodoro(): 
