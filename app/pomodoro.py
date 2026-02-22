@@ -5,6 +5,14 @@ from .models import Pomodoro
 
 router = APIRouter(prefix="/pomodoro")
 
+# --- Configuracion del Dojo ---
+
+WORK_DURATION = 25
+SHORT_BREAK_DURATION = 5
+LONG_BREAK_DURATION = 15
+CYCLES_BEFORE_LONG_BREAK = 4
+ALLOWED_BREAK_OVERAGE_MINUTES = 2
+
 @router.post("/start")
 def start_pomodoro():
     db = SessionLocal()
