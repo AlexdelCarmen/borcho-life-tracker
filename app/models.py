@@ -10,6 +10,8 @@ class Pomodoro(Base):
     start_time = Column(DateTime, default=datetime.utcnow)
     end_time = Column(DateTime, nullable=True)
     
+    session_type = Column(String, default="work")
+    # work | shot_break | long_break    
     
     duration_minutes = Column(Integer, default=25)
     
